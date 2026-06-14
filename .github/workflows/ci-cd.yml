@@ -12,6 +12,7 @@ on:
 env:
   PYTHON_VERSION: "3.10"
   IMAGE_NAME: benharbfarah/ci_cd_pipeline
+  PYTHONPATH: ${{ github.workspace }}
 
 jobs:
   test:
