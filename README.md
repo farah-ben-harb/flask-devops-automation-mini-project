@@ -107,7 +107,8 @@ docker run -p 5000:5000 benharbfarah/ci_cd_pipeline
 Le workflow `.github/workflows/ci-cd.yml` fait deux choses:
 
 - Il exécute les tests sur chaque `push` et `pull_request`
-- Il construit et pousse l'image Docker sur Docker Hub `benharbfarah/ci_cd_pipeline` sur la branche `main`
+- Il construit l'image Docker à chaque `push`
+- Il pousse l'image sur Docker Hub `benharbfarah/ci_cd_pipeline` sur la branche `main` uniquement si `DOCKERHUB_TOKEN` est configuré
 
 ## Configuration GitHub requise
 
@@ -122,6 +123,10 @@ Créer un compte Docker Hub puis:
 1. Vérifie que le repository `benharbfarah/ci_cd_pipeline` existe bien
 2. Génère un access token Docker Hub
 3. Ajoute ce token dans GitHub Secrets sous `DOCKERHUB_TOKEN`
+
+## Important
+
+Sans `DOCKERHUB_TOKEN`, le workflow continue d’exécuter les tests et de construire l’image, mais il ne publie pas l’image sur Docker Hub.
 
 ## Schéma du pipeline
 
