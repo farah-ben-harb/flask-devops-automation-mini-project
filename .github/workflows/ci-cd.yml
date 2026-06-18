@@ -142,7 +142,9 @@ jobs:
       - name: Import VM extension into state if needed
         working-directory: ${{ env.TF_ROOT }}
         run: |
-          if ! terraform state list | grep -q '^azurerm_virtual_machine_extension.deploy_app$'; then
+          if terraform state list 2>/dev/null | grep -q '^azurerm_virtual_machine_extension.deploy_app$'; then
+            echo "VM extension already tracked in state"
+          else
             terraform import \
               azurerm_virtual_machine_extension.deploy_app \
               "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/${TF_VAR_resource_group_name}/providers/Microsoft.Compute/virtualMachines/${TF_VAR_vm_name}/extensions/${TF_VAR_vm_name}-custom-script"
