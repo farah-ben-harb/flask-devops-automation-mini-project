@@ -24,10 +24,11 @@ receivers:
     email_configs:
       - to: benharbfarah85@gmail.com
         send_resolved: true
-        subject: >-
-          [{{ .Status | toUpper }}{{ if gt (len .Alerts.Firing) 0 }}:{{ len .Alerts.Firing }}{{ end }}] {{ .CommonLabels.alertname }}{{ if .CommonLabels.service }} ({{ .CommonLabels.service }}){{ end }}
         text: '{{ template "email.default.text" . }}'
         html: '{{ template "email.default.html" . }}'
+        headers:
+          Subject: >-
+            [{{ .Status | toUpper }}{{ if gt (len .Alerts.Firing) 0 }}:{{ len .Alerts.Firing }}{{ end }}] {{ .CommonLabels.alertname }}{{ if .CommonLabels.service }} ({{ .CommonLabels.service }}){{ end }}
 
 inhibit_rules:
   - source_matchers:
