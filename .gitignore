@@ -14,3 +14,16 @@ htmlcov/
 coverage.xml
 .mypy_cache/
 .ruff_cache/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.auto.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+terraform.tfvars

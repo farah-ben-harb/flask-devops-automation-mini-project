@@ -10,6 +10,8 @@ Le projet intègre:
 - un pipeline CI/CD avec GitHub Actions
 - la construction automatique de l’image Docker
 - la publication automatique sur Docker Hub
+- un déploiement automatisé sur une VM Azure avec Terraform
+- une couche d’observabilité avec Prometheus, Grafana, Alertmanager, node_exporter, cAdvisor et blackbox exporter
 
 Ce projet m’a permis de renforcer mes compétences en:
 
@@ -18,5 +20,7 @@ Ce projet m’a permis de renforcer mes compétences en:
 - automatisation des builds
 - gestion des secrets GitHub
 - packaging applicatif avec Docker
+- infrastructure as code avec Terraform
+- supervision et alerting avec Prometheus et Grafana
 
 Objectif technique: construire une base réaliste, propre et réutilisable pour un futur déploiement sur serveur Linux ou environnement cloud.

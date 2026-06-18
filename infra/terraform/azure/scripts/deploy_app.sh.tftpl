@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+echo "[deploy] Script: ${script_name}"
+
+echo "[1/5] Updating packages"
+apt-get update -y
+
+echo "[2/5] Installing Docker"
+if ! command -v docker >/dev/null 2>&1; then
+  apt-get install -y docker.io
+fi
+
+echo "[3/5] Starting Docker"
+systemctl enable docker
+systemctl start docker
+
+echo "[4/5] Pulling app image"
+docker pull ${docker_image}
+
+echo "[5/5] Restarting container"
+docker rm -f ${container_name} >/dev/null 2>&1 || true
+docker run -d \
+  --restart unless-stopped \
+  --name ${container_name} \
+  -p ${host_port}:${app_port} \
+  ${docker_image}

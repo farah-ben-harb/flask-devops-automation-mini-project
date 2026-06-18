@@ -10,6 +10,8 @@ Réalisations:
 - automatisation CI/CD avec GitHub Actions
 - build et publication automatique de l’image Docker sur Docker Hub
 - préparation du projet pour un déploiement futur sur serveur Linux ou cloud
+- déploiement automatisé sur une VM Azure existante avec Terraform
+- ajout d’une stack d’observabilité Prometheus / Grafana / Alertmanager
 
 Compétences mobilisées:
 
@@ -21,6 +23,10 @@ Compétences mobilisées:
 - tests automatisés
 - variables d’environnement
 - gestion de secrets
+- Terraform
+- Azure VM
+- Prometheus
+- Grafana
 
 Résultat:
 

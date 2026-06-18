@@ -1,0 +1,129 @@
+name: Terraform Azure VM
+
+on:
+  pull_request:
+    paths:
+      - "infra/terraform/azure/**"
+      - ".github/workflows/terraform-azure.yml"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose what to run"
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-azure-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+  TF_ROOT: infra/terraform/azure
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  TF_VAR_resource_group_name: ${{ vars.AZURE_RESOURCE_GROUP }}
+  TF_VAR_vm_name: ${{ vars.AZURE_VM_NAME }}
+
+jobs:
+  plan:
+    name: Terraform plan
+    runs-on: [self-hosted, linux, x64, azure-vm]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure CLI login with managed identity
+        run: |
+          az login --identity
+          az account set --subscription "${AZURE_SUBSCRIPTION_ID}"
+
+      - name: Terraform fmt
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform init
+
+      - name: Import VM extension into state if needed
+        working-directory: ${{ env.TF_ROOT }}
+        run: |
+          if ! terraform state list | grep -q '^azurerm_virtual_machine_extension.deploy_app$'; then
+            terraform import \
+              azurerm_virtual_machine_extension.deploy_app \
+              "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${TF_VAR_resource_group_name}/providers/Microsoft.Compute/virtualMachines/${TF_VAR_vm_name}/extensions/${TF_VAR_vm_name}-custom-script"
+          fi
+
+      - name: Terraform validate
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform plan -no-color -out=tfplan
+
+      - name: Upload Terraform plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TF_ROOT }}/tfplan
+          if-no-files-found: error
+          retention-days: 1
+
+  apply:
+    name: Terraform apply
+    needs: plan
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply' }}
+    runs-on: [self-hosted, linux, x64, azure-vm]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Azure CLI login with managed identity
+        run: |
+          az login --identity
+          az account set --subscription "${AZURE_SUBSCRIPTION_ID}"
+
+      - name: Terraform fmt
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform init
+
+      - name: Import VM extension into state if needed
+        working-directory: ${{ env.TF_ROOT }}
+        run: |
+          if ! terraform state list | grep -q '^azurerm_virtual_machine_extension.deploy_app$'; then
+            terraform import \
+              azurerm_virtual_machine_extension.deploy_app \
+              "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${TF_VAR_resource_group_name}/providers/Microsoft.Compute/virtualMachines/${TF_VAR_vm_name}/extensions/${TF_VAR_vm_name}-custom-script"
+          fi
+
+      - name: Terraform validate
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform validate
+
+      - name: Download Terraform plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TF_ROOT }}
+
+      - name: Terraform apply
+        working-directory: ${{ env.TF_ROOT }}
+        run: terraform apply -auto-approve tfplan

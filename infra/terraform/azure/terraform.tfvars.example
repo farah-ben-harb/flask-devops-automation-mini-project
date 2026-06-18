@@ -1,0 +1,6 @@
+resource_group_name = "myResourceGroupTerraform"
+vm_name             = "YOUR_VM_NAME"
+container_name      = "flask-devops-app"
+docker_image        = "benharbfarah/ci_cd_pipeline:latest"
+host_port           = 80
+app_port            = 5000

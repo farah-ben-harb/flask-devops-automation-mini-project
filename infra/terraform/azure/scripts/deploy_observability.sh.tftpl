@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+STACK_ROOT="${stack_root}"
+COMPOSE_PROJECT_NAME="${compose_project_name}"
+
+echo "[deploy] Preparing observability stack in $${STACK_ROOT}"
+
+apt-get update -y
+apt-get install -y docker.io
+
+if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
+  apt-get install -y docker-compose || apt-get install -y docker-compose-plugin
+fi
+
+systemctl enable docker
+systemctl start docker
+
+mkdir -p "$${STACK_ROOT}"/prometheus
+mkdir -p "$${STACK_ROOT}"/alertmanager
+mkdir -p "$${STACK_ROOT}"/blackbox
+mkdir -p "$${STACK_ROOT}"/grafana/provisioning/datasources
+mkdir -p "$${STACK_ROOT}"/grafana/provisioning/dashboards
+mkdir -p "$${STACK_ROOT}"/grafana/dashboards
+
+cat > "$${STACK_ROOT}/.env" <<'EOF_ENV'
+${env_file}
+EOF_ENV
+
+cat > "$${STACK_ROOT}/docker-compose.yml" <<'EOF_COMPOSE'
+${docker_compose}
+EOF_COMPOSE
+
+cat > "$${STACK_ROOT}/prometheus/prometheus.yml" <<'EOF_PROMETHEUS'
+${prometheus_config}
+EOF_PROMETHEUS
+
+cat > "$${STACK_ROOT}/prometheus/rules.yml" <<'EOF_RULES'
+${prometheus_rules}
+EOF_RULES
+
+cat > "$${STACK_ROOT}/alertmanager/alertmanager.yml" <<'EOF_ALERTMANAGER'
+${alertmanager_config}
+EOF_ALERTMANAGER
+
+cat > "$${STACK_ROOT}/blackbox/blackbox.yml" <<'EOF_BLACKBOX'
+${blackbox_config}
+EOF_BLACKBOX
+
+cat > "$${STACK_ROOT}/grafana/provisioning/datasources/datasource.yml" <<'EOF_GRAFANA_DS'
+${grafana_datasource}
+EOF_GRAFANA_DS
+
+cat > "$${STACK_ROOT}/grafana/provisioning/dashboards/dashboards.yml" <<'EOF_GRAFANA_DASHBOARDS'
+${grafana_dashboards}
+EOF_GRAFANA_DASHBOARDS
+
+cat > "$${STACK_ROOT}/grafana/dashboards/flask-observability.json" <<'EOF_GRAFANA_JSON'
+${grafana_dashboard}
+EOF_GRAFANA_JSON
+
+cd "$${STACK_ROOT}"
+
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_CMD="docker-compose"
+else
+  echo "[deploy] docker compose is not available after package install"
+  exit 1
+fi
+
+echo "[deploy] Stopping old stack if it exists"
+$${COMPOSE_CMD} --project-name "$${COMPOSE_PROJECT_NAME}" down --remove-orphans || true
+docker rm -f flask-devops-app >/dev/null 2>&1 || true
+
+echo "[deploy] Pulling the latest images"
+$${COMPOSE_CMD} --project-name "$${COMPOSE_PROJECT_NAME}" pull
+
+echo "[deploy] Starting observability stack"
+$${COMPOSE_CMD} --project-name "$${COMPOSE_PROJECT_NAME}" up -d --remove-orphans
+
+echo "[deploy] Stack started successfully"
