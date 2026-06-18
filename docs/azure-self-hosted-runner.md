@@ -36,6 +36,7 @@ GitHub Actions JavaScript-based actions need Node.js on the runner host.
 ```bash
 sudo apt-get update
 sudo apt-get install -y nodejs npm unzip
+sudo ln -sf /usr/bin/nodejs /usr/bin/node
 node -v
 ```
 
