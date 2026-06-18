@@ -93,7 +93,7 @@ Envoi et routage des alertes Prometheus.
 ## 4) Structure du dépôt
 
 ```text
-flask-devops-automation-mini-project/
+flask-azure-devops-pipeline/
 ├── app.py
 ├── requirements.txt
 ├── Dockerfile
@@ -553,4 +553,3 @@ Tu dois pouvoir expliquer :
 - un déploiement Azure automatisé
 - un stack d’observabilité fonctionnel
 - un projet crédible pour un portfolio Cloud & DevOps
-

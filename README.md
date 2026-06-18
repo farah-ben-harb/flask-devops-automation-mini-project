@@ -1,4 +1,4 @@
-# Flask DevOps Automation Mini Project
+# Flask Azure DevOps Pipeline
 
 Automated Flask application deployment on Azure with GitHub Actions, Docker, Terraform, and a full observability stack.
 
@@ -44,7 +44,7 @@ It is designed as a portfolio project for CI/CD, Infrastructure as Code, and obs
 ## Repository Layout
 
 ```text
-flask-devops-automation-mini-project/
+flask-azure-devops-pipeline/
 ├── app.py
 ├── requirements.txt
 ├── Dockerfile

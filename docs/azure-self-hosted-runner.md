@@ -69,7 +69,7 @@ Then run the commands GitHub shows you. The flow is usually:
 mkdir actions-runner && cd actions-runner
 curl -o actions-runner.tar.gz -L <github-runner-download-url>
 tar xzf actions-runner.tar.gz
-./config.sh --url https://github.com/farah-ben-harb/flask-devops-automation-mini-project --token <RUNNER_TOKEN> --labels azure-vm --unattended
+./config.sh --url https://github.com/farah-ben-harb/flask-azure-devops-pipeline --token <RUNNER_TOKEN> --labels azure-vm --unattended
 sudo ./svc.sh install
 sudo ./svc.sh start
 ```
